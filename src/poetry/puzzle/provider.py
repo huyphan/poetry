@@ -123,6 +123,7 @@ class Provider:
         self._direct_origin = DirectOrigin(self._pool.artifact_cache)
         self._io = io
         self._env: Env | None = None
+        self._in_scope_environments: list[dict[str, str]] | None = None
         self._python_constraint = package.python_constraint
         self._is_debugging: bool = self._io.is_debug() or self._io.is_very_verbose()
         self._overrides: dict[DependencyPackage, dict[str, Dependency]] = {}
@@ -205,6 +206,9 @@ class Provider:
                 f"The dependency name for {dependency.name} does not match the actual"
                 f" package's name: {package.name}"
             )
+
+    def set_in_scope_environments(self, environments: list[dict[str, str]]) -> None:
+        self._in_scope_environments = environments
 
     def search_for_installed_packages(
         self,
@@ -854,6 +858,7 @@ class Provider:
             )
             and (active_extras is None or marker.validate({"extra": active_extras}))
             and (not self._env or marker.validate(self._env.marker_env))
+            and (not self._in_scope_environments or any(marker.validate(env) for env in self._in_scope_environments))
         )
 
     def _resolve_overlapping_markers(

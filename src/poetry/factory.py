@@ -82,6 +82,9 @@ class Factory(BaseFactory):
 
         config.merge({"repositories": repositories})
 
+        # Load in-scope environments
+        config.merge({"in_scope_environments": base_poetry.pyproject.poetry_config.get("in_scope_environments", [])})
+
         poetry = Poetry(
             poetry_file,
             base_poetry.local_config,
@@ -104,7 +107,6 @@ class Factory(BaseFactory):
         plugin_manager.load_plugins()
         poetry.set_plugin_manager(plugin_manager)
         plugin_manager.activate(poetry, io)
-
         return poetry
 
     @classmethod

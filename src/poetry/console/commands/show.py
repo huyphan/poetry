@@ -218,6 +218,7 @@ lists all packages available."""
             installed=[],
             locked=locked_packages,
             io=NullIO(),
+            in_scope_environments=[],
         )
         solver.provider.load_deferred(False)
         with solver.use_environment(self.env):

@@ -187,6 +187,7 @@ class Installer:
             locked_repository.packages,
             locked_repository.packages,
             self._io,
+            self._config.get("in_scope_environments"),
         )
 
         # Always re-solve directory dependencies, otherwise we can't determine
@@ -233,6 +234,7 @@ class Installer:
                 self._installed_repository.packages,
                 locked_repository.packages,
                 self._io,
+                self._config.get("in_scope_environments"),
             )
 
             with solver.provider.use_source_root(
@@ -295,6 +297,7 @@ class Installer:
             self._installed_repository.packages,
             locked_repository.packages,
             NullIO(),
+            self._config.get("in_scope_environments"),
         )
         # Everything is resolved at this point, so we no longer need
         # to load deferred dependencies (i.e. VCS, URL and path dependencies)

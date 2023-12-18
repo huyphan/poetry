@@ -13,6 +13,9 @@
       "items": {
         "$ref": "#/definitions/repository"
       }
+    },
+    "in_scope_environments": {
+      "type": "array"
     }
   },
   "definitions": {

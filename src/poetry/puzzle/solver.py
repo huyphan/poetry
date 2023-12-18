@@ -41,6 +41,7 @@ class Solver:
         installed: list[Package],
         locked: list[Package],
         io: IO,
+        in_scope_environments: list[dict[str, str]] | None
     ) -> None:
         self._package = package
         self._pool = pool
@@ -51,6 +52,7 @@ class Solver:
         self._provider = Provider(
             self._package, self._pool, self._io, installed=installed, locked=locked
         )
+        self._provider.set_in_scope_environments(in_scope_environments or [])
         self._overrides: list[dict[DependencyPackage, dict[str, Dependency]]] = []
 
     @property

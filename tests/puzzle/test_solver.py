@@ -78,7 +78,7 @@ def pool(repo: Repository) -> RepositoryPool:
 
 @pytest.fixture()
 def solver(package: ProjectPackage, pool: RepositoryPool, io: NullIO) -> Solver:
-    return Solver(package, pool, [], [], io)
+    return Solver(package, pool, [], [], io, [])
 
 
 def check_solver_result(
@@ -131,7 +131,7 @@ def test_solver_remove_if_no_longer_locked(
 ) -> None:
     package_a = get_package("A", "1.0")
 
-    solver = Solver(package, pool, [package_a], [package_a], io)
+    solver = Solver(package, pool, [package_a], [package_a], io, [])
     transaction = solver.solve()
 
     check_solver_result(transaction, [{"job": "remove", "package": package_a}])
@@ -143,7 +143,7 @@ def test_remove_non_installed(
     package_a = get_package("A", "1.0")
     repo.add_package(package_a)
 
-    solver = Solver(package, pool, [], [package_a], io)
+    solver = Solver(package, pool, [], [package_a], io, [])
     transaction = solver.solve([])
 
     check_solver_result(transaction, [])
@@ -172,7 +172,7 @@ def test_install_unpublished_package_does_not_fail(
 
     repo.add_package(package_a)
 
-    solver = Solver(package, pool, [package_b], [], io)
+    solver = Solver(package, pool, [package_b], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -283,7 +283,7 @@ def test_install_installed(
     package_a = get_package("A", "1.0")
     repo.add_package(package_a)
 
-    solver = Solver(package, pool, [package_a], [], io)
+    solver = Solver(package, pool, [package_a], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -301,7 +301,7 @@ def test_update_installed(
     repo.add_package(package_a)
     repo.add_package(new_package_a)
 
-    solver = Solver(package, pool, [get_package("A", "1.0")], [], io)
+    solver = Solver(package, pool, [get_package("A", "1.0")], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -327,7 +327,7 @@ def test_update_with_use_latest(
     installed = [get_package("A", "1.0")]
     locked = [package_a, package_b]
 
-    solver = Solver(package, pool, installed, locked, io)
+    solver = Solver(package, pool, installed, locked, io, [])
     transaction = solver.solve(use_latest=[package_b.name])
 
     check_solver_result(
@@ -2540,7 +2540,7 @@ def test_solver_git_dependencies_update(
         Factory.create_dependency("demo", {"git": "https://github.com/demo/demo.git"})
     )
 
-    solver = Solver(package, pool, [demo_installed], [], io)
+    solver = Solver(package, pool, [demo_installed], [], io, [])
     transaction = solver.solve()
 
     ops = check_solver_result(
@@ -2583,7 +2583,7 @@ def test_solver_git_dependencies_update_skipped(
         Factory.create_dependency("demo", {"git": "https://github.com/demo/demo.git"})
     )
 
-    solver = Solver(package, pool, [demo], [], io)
+    solver = Solver(package, pool, [demo], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -2618,7 +2618,7 @@ def test_solver_git_dependencies_short_hash_update_skipped(
         )
     )
 
-    solver = Solver(package, pool, [demo], [], io)
+    solver = Solver(package, pool, [demo], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -2681,7 +2681,7 @@ def test_solver_can_resolve_directory_dependencies_nested_editable(
     poetry = Factory().create_poetry(cwd=base)
     package = poetry.package
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     transaction = solver.solve()
 
@@ -2906,7 +2906,7 @@ def test_solver_can_solve_with_legacy_repository_using_proper_dists(
     repo = MockLegacyRepository()
     pool = RepositoryPool([repo])
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     package.add_dependency(Factory.create_dependency("isort", "4.3.4"))
 
@@ -2951,7 +2951,7 @@ def test_solver_can_solve_with_legacy_repository_using_proper_python_compatible_
     repo = MockLegacyRepository()
     pool = RepositoryPool([repo])
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     package.add_dependency(Factory.create_dependency("isort", "4.3.4"))
 
@@ -2980,7 +2980,7 @@ def test_solver_skips_invalid_versions(package: ProjectPackage, io: NullIO) -> N
     repo = MockPyPIRepository()
     pool = RepositoryPool([repo])
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     package.add_dependency(Factory.create_dependency("trackpy", "^0.4"))
 
@@ -3024,7 +3024,7 @@ def test_solver_chooses_most_recent_version_amongst_repositories(
     repo = MockLegacyRepository()
     pool = RepositoryPool([repo, MockPyPIRepository()])
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     transaction = solver.solve()
 
@@ -3047,7 +3047,7 @@ def test_solver_chooses_from_correct_repository_if_forced(
     repo = MockLegacyRepository()
     pool = RepositoryPool([repo, MockPyPIRepository()])
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     transaction = solver.solve()
 
@@ -3086,7 +3086,7 @@ def test_solver_chooses_from_correct_repository_if_forced_and_transitive_depende
     repo.add_package(foo)
     pool = RepositoryPool([MockLegacyRepository(), repo, MockPyPIRepository()])
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     transaction = solver.solve()
 
@@ -3123,7 +3123,7 @@ def test_solver_does_not_choose_from_secondary_repository_by_default(
     pool.add_repository(MockPyPIRepository(), priority=Priority.SECONDARY)
     pool.add_repository(MockLegacyRepository())
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     transaction = solver.solve()
 
@@ -3173,7 +3173,7 @@ def test_solver_chooses_from_secondary_if_explicit(
     pool.add_repository(MockPyPIRepository(), priority=Priority.SECONDARY)
     pool.add_repository(MockLegacyRepository())
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     transaction = solver.solve()
 
@@ -3212,7 +3212,7 @@ def test_solver_does_not_choose_from_explicit_repository(
     pool.add_repository(MockPyPIRepository(), priority=Priority.EXPLICIT)
     pool.add_repository(MockLegacyRepository())
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     with pytest.raises(SolverProblemError):
         solver.solve()
@@ -3231,7 +3231,7 @@ def test_solver_chooses_direct_dependency_from_explicit_if_explicit(
     pool.add_repository(MockPyPIRepository(), priority=Priority.EXPLICIT)
     pool.add_repository(MockLegacyRepository())
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     transaction = solver.solve()
 
@@ -3261,7 +3261,7 @@ def test_solver_ignores_explicit_repo_for_transient_dependencies(
     pool.add_repository(MockPyPIRepository(), priority=Priority.EXPLICIT)
     pool.add_repository(MockLegacyRepository())
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     with pytest.raises(SolverProblemError):
         solver.solve()
@@ -3293,7 +3293,7 @@ def test_solver_discards_packages_with_empty_markers(
     repo.add_package(package_b)
     repo.add_package(package_c)
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
 
     transaction = solver.solve()
 
@@ -3395,7 +3395,7 @@ def test_solver_does_not_fail_with_locked_git_and_non_git_dependencies(
     installed = [git_package]
     locked = [get_package("a", "1.2.3"), git_package]
 
-    solver = Solver(package, pool, installed, locked, io)
+    solver = Solver(package, pool, installed, locked, io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -3470,7 +3470,7 @@ def test_solver_synchronize_single(
 ) -> None:
     package_a = get_package("a", "1.0")
 
-    solver = Solver(package, pool, [package_a], [], io)
+    solver = Solver(package, pool, [package_a], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -3486,7 +3486,7 @@ def test_solver_with_synchronization_keeps_critical_package(
 ) -> None:
     package_pip = get_package("setuptools", "1.0")
 
-    solver = Solver(package, pool, [package_pip], [], io)
+    solver = Solver(package, pool, [package_pip], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(transaction, [])
@@ -3678,7 +3678,7 @@ def test_solver_should_not_update_same_version_packages_if_installed_has_no_sour
     )
     repo.add_package(foo)
 
-    solver = Solver(package, pool, [get_package("foo", "1.0.0")], [], io)
+    solver = Solver(package, pool, [get_package("foo", "1.0.0")], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -3875,7 +3875,7 @@ def test_solver_can_resolve_python_restricted_package_dependencies(
     repo.add_package(futures)
     repo.add_package(pre_commit)
 
-    solver = Solver(package, pool, [], [futures, pre_commit], io)
+    solver = Solver(package, pool, [], [futures, pre_commit], io, [])
     transaction = solver.solve(use_latest=[canonicalize_name("pre-commit")])
 
     check_solver_result(
@@ -3976,7 +3976,7 @@ def test_solver_keeps_multiple_locked_dependencies_for_same_package(
     else:
         locked = []
 
-    solver = Solver(package, pool, [], locked, io)
+    solver = Solver(package, pool, [], locked, io, [])
     set_package_python_versions(solver.provider, "^3.6")
     transaction = solver.solve()
 
@@ -4028,7 +4028,7 @@ def test_solver_does_not_update_ref_of_locked_vcs_package(
     pendulum = get_package("pendulum", "2.0.3")
     repo.add_package(pendulum)
 
-    solver = Solver(package, pool, [], locked, io)
+    solver = Solver(package, pool, [], locked, io, [])
     transaction = solver.solve()
 
     ops = check_solver_result(
@@ -4074,7 +4074,7 @@ def test_solver_does_not_fetch_locked_vcs_package_with_ref(
     pendulum = get_package("pendulum", "2.0.3")
     repo.add_package(pendulum)
 
-    solver = Solver(package, pool, [], [demo_locked], io)
+    solver = Solver(package, pool, [], [demo_locked], io, [])
     spy = mocker.spy(solver._provider, "_search_for_vcs")
 
     solver.solve()
@@ -4206,7 +4206,7 @@ def test_update_with_prerelease_and_no_solution(
     repo.add_package(newer_crashtest)
     repo.add_package(even_newer_crashtest)
 
-    solver = Solver(package, pool, installed, locked, io)
+    solver = Solver(package, pool, installed, locked, io, [])
 
     with pytest.raises(SolverProblemError):
         solver.solve()
@@ -4228,7 +4228,7 @@ def test_solver_yanked_warning(
     repo.add_package(baz)
 
     io = BufferedIO(decorated=False)
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -4309,7 +4309,7 @@ def test_update_with_use_latest_vs_lock(
         locked = []
         use_latest = []
 
-    solver = Solver(package, pool, [], locked, io)
+    solver = Solver(package, pool, [], locked, io, [])
     transaction = solver.solve(use_latest)
 
     check_solver_result(
@@ -4355,7 +4355,7 @@ def test_solver_resolves_duplicate_dependency_in_extra(
     repo.add_package(package_b1)
     repo.add_package(package_b2)
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
@@ -4393,7 +4393,7 @@ def test_solver_resolves_duplicate_dependencies_with_restricted_extras(
     repo.add_package(package_b1)
     repo.add_package(package_b2)
 
-    solver = Solver(package, pool, [], [], io)
+    solver = Solver(package, pool, [], [], io, [])
     transaction = solver.solve()
 
     check_solver_result(
